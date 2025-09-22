@@ -1,0 +1,71 @@
+from flask import Flask, render_template_string, jsonify
+import threading
+import time
+
+app = Flask(__name__)
+
+reminder_shown = False
+
+html = '''
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Love Reminder</title>
+    <script>
+        let timerStarted = false;
+
+        function startTimer() {
+            if(timerStarted) return;
+            timerStarted = true;
+            document.getElementById("status").innerText = "Reminder set for 30 minutes from now.";
+            fetch('/start_timer');
+            checkReminder();
+        }
+
+        function checkReminder() {
+            fetch('/check_reminder')
+            .then(response => response.json())
+            .then(data => {
+                if(data.reminder) {
+                    document.getElementById("status").innerText = data.message;
+                } else {
+                    setTimeout(checkReminder, 5000);
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Love Reminder</h1>
+    <button onclick="startTimer()">Remind My Girlfriend I Love Her</button>
+    <p id="status">Press the button to set a reminder.</p>
+</body>
+</html>
+'''
+
+def reminder_timer():
+    global reminder_shown
+    time.sleep(1800)  # 30 minutes
+    reminder_shown = True
+
+@app.route('/')
+def index():
+    return render_template_string(html)
+
+@app.route('/start_timer')
+def start_timer():
+    global reminder_shown
+    reminder_shown = False
+    threading.Thread(target=reminder_timer).start()
+    return jsonify({"status": "timer started"})
+
+@app.route('/check_reminder')
+def check_reminder():
+    global reminder_shown
+    if reminder_shown:
+        return jsonify({"reminder": True, "message": "Hey! Just reminding you, I love you ❤️"})
+    else:
+        return jsonify({"reminder": False})
+
+if __name__ == '__main__':
+    app.run(debug=True)
