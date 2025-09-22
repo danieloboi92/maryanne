@@ -1,0 +1,22 @@
+from flask import Flask, render_template
+
+app = Flask(__name__)
+
+# Sample grocery items
+products = [
+    {"id": 1, "name": "Apples", "price": 3.50, "description": "Fresh red apples"},
+    {"id": 2, "name": "Bananas", "price": 2.00, "description": "Ripe yellow bananas"},
+    {"id": 3, "name": "Carrots", "price": 1.75, "description": "Organic carrots"},
+    {"id": 4, "name": "Milk", "price": 4.00, "description": "1 liter whole milk"},
+]
+
+@app.route('/')
+def home():
+    return render_template('home.html', products=products)
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+if __name__ == '__main__':
+    app.run(debug=True)
